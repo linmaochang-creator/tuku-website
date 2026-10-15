@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b2a55">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="台78判別">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>土庫消防隊｜台78線救災快速判別系統</title>
+<style>
+:root{--navy:#0b2a55;--navy2:#16407a;--red:#c8102e;--bg:#eef2f8;--ink:#10192b;--line:#b9c5db;--warn:#fff4f5;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:18px/1.55 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+header{background:var(--navy);color:#fff;padding:calc(8px + env(safe-area-inset-top)) 16px 8px;border-bottom:6px solid var(--red)}
+header .org{font-size:22px;font-weight:800;letter-spacing:.15em}
+header h1{margin:0;font-size:20px;font-weight:700}
+header .meta{font-size:13px;opacity:.9;margin-top:4px}
+.notice{background:var(--red);color:#fff;font-weight:700;text-align:center;padding:8px 12px;font-size:16px}
+.testbanner{background:#000;color:#ffe600;font-weight:800;padding:10px 14px;text-align:center;border-bottom:4px dashed #ffe600}
+.databanner{background:#fff;border-bottom:2px solid var(--line);padding:8px 14px;font-size:15px}
+.databanner.bad{background:var(--warn);color:#7a0014;font-weight:700}
+main{max-width:760px;margin:0 auto;padding:12px}
+section[hidden],[hidden]{display:none!important}
+.card{background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.step{font-weight:800;color:var(--navy);margin:0 0 6px;font-size:19px}
+.step span{display:inline-block;background:var(--navy);color:#fff;border-radius:50%;width:28px;height:28px;text-align:center;line-height:28px;margin-right:8px;font-size:16px}
+.dirs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;cursor:pointer}
+.dir{min-height:68px;font-size:26px;font-weight:800;border:3px solid var(--navy);background:#fff;color:var(--navy);border-radius:12px}
+.dir[aria-checked="true"]{background:var(--navy);color:#fff}
+.dir[aria-checked="true"]::before{content:"✔ "}
+input[type=text],select,textarea{width:100%;min-height:56px;font:inherit;font-size:24px;padding:8px 12px;border:3px solid var(--navy);border-radius:10px;background:#fff;color:var(--ink)}
+textarea{font-size:16px;min-height:90px}
+.hint{font-size:14px;color:#44546e;margin-top:4px}
+.btn{min-height:60px;border-radius:12px;border:3px solid var(--navy);background:#fff;color:var(--navy);font-weight:800;font-size:20px;padding:8px 14px}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff;font-size:26px;min-height:72px}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.sm{min-height:46px;font-size:16px;padding:4px 10px}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.err{background:var(--warn);border:3px solid var(--red);color:#7a0014;font-weight:700;border-radius:10px;padding:10px 12px;margin:10px 0}
+.res{border-radius:14px;padding:14px;background:#fff;margin-bottom:12px}
+.res.confirmed{border:5px solid var(--navy)}
+.res.warn{border:5px dashed var(--red)}
+.res .head{font-size:28px;font-weight:900;line-height:1.3}
+.res.confirmed .head{color:var(--navy)}
+.res.warn .head{color:var(--red)}
+.res .sub{font-size:16px;margin-top:6px}
+.res .bar{font-size:20px;font-weight:900;padding:8px 12px;border-radius:8px;margin:0 0 12px}
+.res.confirmed .bar{background:var(--navy);color:#fff}
+.res.warn .bar{background:var(--warn);color:var(--red);border:2px solid var(--red)}
+.res.info .bar{background:#e4e9f2;color:var(--navy)}
+.res.info{border:5px solid var(--line)}
+.res .big{font-size:40px;font-weight:900;line-height:1.2;margin:2px 0 4px}
+.res.confirmed .big{color:var(--navy)}
+.res.warn .big{color:var(--red)}
+.res.info .big{color:#44546e}
+.res .ramp{font-size:20px;font-weight:700}
+.res details{margin-top:10px}
+#result:empty{border:3px dashed var(--line);border-radius:14px;background:#fff;padding:14px;margin-bottom:12px;color:#44546e;font-weight:800;font-size:19px}
+#result:empty::before{content:"④ 進入交流道：完成 ①②③ 後在這裡顯示"}
+dl.kv{margin:12px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:17px}
+dl.kv dt{font-weight:800;color:var(--navy);white-space:nowrap}
+dl.kv dd{margin:0;word-break:break-word}
+.remind{margin-top:10px;background:var(--warn);border-left:6px solid var(--red);padding:8px 10px;font-weight:700;font-size:16px}
+.badge{display:inline-block;font-size:14px;font-weight:800;border-radius:6px;padding:1px 8px;margin-right:6px}
+.badge.ok{background:var(--navy);color:#fff}
+.badge.pend{background:#fff;color:var(--red);border:2px solid var(--red)}
+.badge.test{background:#000;color:#ffe600}
+.item{border:2px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;background:#fff}
+.item.off{opacity:.65;background:#eee}
+.item .sm{font-size:14px;color:#44546e;word-break:break-word}
+.item .btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+h2{font-size:21px;color:var(--navy);margin:6px 0}
+h3{font-size:18px;margin:10px 0 4px;color:var(--navy)}
+details{background:#fff;border:2px solid var(--line);border-radius:10px;margin:8px 0;padding:8px 12px}
+summary{font-weight:800;color:var(--navy);min-height:40px;display:flex;align-items:center}
+details p,details li{font-size:16px}
+details ol,details ul{padding-left:22px;margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid #888;padding:4px 6px;text-align:left;vertical-align:top}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--navy);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom);border-top:4px solid var(--red);z-index:5}
+nav button{background:none;border:0;color:#cfd9ec;min-height:64px;font-size:16px;font-weight:700}
+nav button[aria-current="true"]{background:#fff;color:var(--navy)}
+dialog{width:min(640px,96vw);max-height:92vh;overflow:auto;border:4px solid var(--navy);border-radius:14px;padding:14px}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.frm label{display:block;font-weight:700;margin:10px 0 2px;font-size:16px}
+.frm input[type=text],.frm select{font-size:18px;min-height:48px}
+.frm .chk{display:flex;align-items:center;gap:10px;font-weight:600}
+.frm .chk input{width:26px;height:26px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));background:#000;color:#fff;padding:10px 18px;border-radius:10px;font-weight:700;z-index:10;display:none}
+.pass{color:#0a6b2d;font-weight:800}.fail{color:var(--red);font-weight:800}
+#printArea{display:none}
+@media (pointer:fine){#kmMode{display:none}}
+@media print{
+ body>*:not(#printArea){display:none!important}
+ #printArea{display:block!important;font-size:12pt;color:#000;background:#fff}
+ body{padding:0;background:#fff}
+ #printArea h1{font-size:18pt;margin:0}
+ #printArea .warnbox{border:2px solid #000;padding:6px;margin:8px 0;font-weight:700}
+}
+@media (prefers-reduced-motion:no-preference){}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+</head>
+<body>
+<header>
+ <div class="org">土庫消防隊</div>
+ <h1>台78線救災快速判別系統</h1>
+ <div class="meta" id="metaLine"></div>
+ <button type="button" id="pipBtn" class="btn sm" style="margin-top:8px;background:#fff;min-height:40px">🪟 浮動視窗（永遠置頂）</button>
+</header>
+<div class="notice">⚠ 勤務輔助工具，仍須依正式勤務規定執行</div>
+<div id="testBanner" class="testbanner" hidden>🧪 測試模式：目前使用「假資料」，結果不可作為任何勤務依據</div>
+<div id="dataBanner" class="databanner"></div>
+
+<main>
+<!-- 判別 -->
+<section id="viewMain">
+ <div class="card">
+  <p class="step"><span>1</span>選擇事故方向</p>
+  <div class="dirs" role="radiogroup" aria-label="事故方向">
+   <button type="button" class="dir" role="radio" aria-checked="false" data-dir="東行">東行 →</button>
+   <button type="button" class="dir" role="radio" aria-checked="false" data-dir="西行">← 西行</button>
+  </div>
+  <p class="step" style="margin-top:10px"><span>2</span>輸入事故公里數</p>
+  <div class="row" style="flex-wrap:nowrap;align-items:stretch">
+   <input type="text" id="km" inputmode="decimal" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例：24.6 或 24K+600" aria-label="事故公里數" style="flex:1 1 0;min-width:0">
+   <button type="button" id="kmMode" class="btn" style="flex:0 0 72px;min-height:56px;font-size:16px;padding:2px" aria-label="切換數字鍵盤／全鍵盤（輸入 K 或 + 時使用）">ABC</button>
+  </div>
+  <p class="step" style="margin-top:10px"><span>3</span>立即判別</p>
+  <div class="row" style="flex-wrap:nowrap">
+   <button class="btn red" id="goBtn" type="button" style="flex:2 1 0;min-height:64px">立即判別</button>
+   <button class="btn" id="resetBtn" type="button" style="flex:1 1 0;min-height:64px;font-size:18px;padding:4px">重新輸入</button>
+  </div>
+ </div>
+ <div id="errBox" class="err" role="alert" hidden></div>
+ <div id="result" aria-live="polite"></div>
+ <details>
+  <summary>最近查詢紀錄</summary>
+  <div class="hint">僅記錄方向、公里數、判斷結果與時間，不記錄報案人姓名、電話。保存於本機瀏覽器，最多 10 筆。</div>
+  <div id="histList"></div>
+  <button class="btn sm danger" id="histClear" type="button" style="margin:8px 0">清除紀錄</button>
+ </details>
+</section>
+
+<!-- 規則管理 -->
+<section id="viewRules" hidden>
+ <div class="card">
+  <h2>規則管理</h2>
+  <div class="hint" id="rulesMeta"></div>
+  <div class="row" style="margin-top:10px">
+   <button class="btn sm navy" id="addRule" type="button">＋新增勤務規則</button>
+   <button class="btn sm navy" id="addIC" type="button">＋新增交流道</button>
+   <button class="btn sm" id="editVer" type="button">修改規則版本</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+   <button class="btn sm" id="expBtn" type="button">匯出 JSON</button>
+   <button class="btn sm" id="expCopy" type="button">複製 JSON</button>
+   <button class="btn sm" id="impBtn" type="button">匯入 JSON</button>
+   <button class="btn sm" id="printBtn2" type="button">列印參考資料</button>
+   <button class="btn sm danger" id="resetDs" type="button">重置為內建規則</button>
+  </div>
+  <input type="file" id="impFile" accept=".json,application/json" hidden>
+  <div id="impErr" class="err" role="alert" hidden></div>
+ </div>
+ <div class="card"><h2>出動優先規則（土庫分隊）</h2><div id="ruleList"></div></div>
+ <div class="card"><h2>交流道進入規則</h2><div class="hint">交流道推薦與出動優先分開判斷；匝道方向留白代表「尚未建立」，判別時會顯示待人工確認。</div><div id="icList"></div></div>
+</section>
+
+<!-- 測試 -->
+<section id="viewTest" hidden>
+ <div class="card">
+  <h2>測試模式與自動測試</h2>
+  <p style="font-size:16px">測試資料為<b>假資料</b>，與正式規則完全分開存放，不會寫入或混入正式規則。</p>
+  <div class="row">
+   <button class="btn navy" id="runTests" type="button">執行全部自動測試</button>
+   <button class="btn" id="toggleTest" type="button">開啟測試模式</button>
+  </div>
+  <div id="testOut" style="margin-top:10px"></div>
+ </div>
+ <div class="card"><h2>測試模式假資料一覽</h2><div class="hint">開啟測試模式後，回到「判別」頁手動輸入即可驗證。</div><div id="fixList"></div></div>
+</section>
+
+<!-- 說明 -->
+<section id="viewHelp" hidden>
+ <div class="card"><h2>操作教學與使用限制</h2><div id="helpPend"></div></div>
+ <div id="helpBody"></div>
+</section>
+</main>
+
+<nav>
+ <button data-view="viewMain" aria-current="true">判別</button>
+ <button data-view="viewRules" aria-current="false">規則</button>
+ <button data-view="viewTest" aria-current="false">測試</button>
+ <button data-view="viewHelp" aria-current="false">說明</button>
+</nav>
+<dialog id="dlg"></dialog>
+<div id="printArea"></div>
+<div id="toast" role="status"></div>
+
+<script id="core">
+/* ===================== 核心判斷邏輯（無 DOM 相依，可於 Node 測試） ===================== */
+var APP_VERSION='1.5.0';
+var DIRS=['東行','西行'];
+var TUKU='土庫分隊';
+var NOT_VERIFIED_MSG='已完成出動優先判斷，但交流道進入路線尚未核實，請依勤務規定人工確認。';
+var KNOWN_MAX_M=42800;
+var SRC='雲林縣消防局台78線救災救護出動順序表 114.07.23（官方表格照片）';
+var VBY='土庫消防隊（依官方表格黃色標示＋隊內紅筆標註）';
+var VAT='2026-10-15';
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function toM(x){return Math.round(x*1000);}
+function fmtKm(m){var f=String(m%1000).padStart(3,'0').replace(/0+$/,'')||'0';return 'K'+Math.floor(m/1000)+'.'+f+'（'+Math.floor(m/1000)+'K+'+String(m%1000).padStart(3,'0')+'）';}
+function fmtKmShort(x){return 'K'+x.toFixed(3).replace(/0+$/,'').replace(/\.$/,'.0');}
+
+function normalizeInput(s){
+  return String(s==null?'':s)
+    .replace(/[！-～]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);})
+    .replace(/　/g,' ').replace(/[－—–−]/g,'-').trim();
+}
+/* 解析公里數：全部轉為「公尺整數」，避免浮點誤差。 */
+function parseKm(raw){
+  var s=normalizeInput(raw).replace(/\s+/g,'');
+  if(!s)return{ok:false,error:'請輸入事故公里數。'};
+  if(s.indexOf('-')>=0)return{ok:false,error:'公里數不可為負數，也不可含「-」。'};
+  var m,meters;
+  if((m=s.match(/^K?(\d{1,3})(?:\.(\d{1,3}))?$/i))){
+    meters=Number(m[1])*1000+Number((m[2]||'').padEnd(3,'0'));
+  }else if((m=s.match(/^K?(\d{1,3})K?\+(\d{3})$/i))){
+    meters=Number(m[1])*1000+Number(m[2]);
+  }else{
+    return{ok:false,error:'公里數格式無法辨識。可用：24.6、K24.6、24K+600（「+」後須為三位數公尺）。'};
+  }
+  return{ok:true,m:meters};
+}
+
+function isTuku(r){return r.team===TUKU;}
+function isDefinite(r,opts){return r.status==='verified'||(!!opts.allowTest&&r.status==='test');}
+function idOf(r){return r.ruleId||r.icId;}
+function uniq(a){var o=[];a.forEach(function(x){if(o.indexOf(x)<0)o.push(x);});return o;}
+
+/* 掃描：hits＝明確落在區間內；bound＝剛好等於「歸屬未確認」的起/終點 */
+function scan(list,dir,q,opts){
+  var hits=[],bound=[];
+  (list||[]).forEach(function(r){
+    if(!r.enabled||r.direction!==dir)return;
+    if(!(r.status==='verified'||r.status==='pending'||(opts.allowTest&&r.status==='test')))return;
+    if(r.startKm==null||r.endKm==null)return;
+    var s=toM(r.startKm),e=toM(r.endKm);
+    if((q===s&&!r.startConfirmed)||(q===e&&!r.endConfirmed)){bound.push(r);return;}
+    var inside=(q>s||(q===s&&r.includeStart))&&(q<e||(q===e&&r.includeEnd));
+    if(inside)hits.push(r);
+  });
+  return{hits:hits,bound:bound};
+}
+/* mode 'dispatch'：以「是否土庫」分群；mode 'ic'：以交流道名稱分群。 */
+function classify(sc,opts,mode){
+  var pool=sc.hits.concat(sc.bound);
+  if(!pool.length)return{state:'unknown',rules:[]};
+  var grp=function(r){return mode==='ic'?r.name:(isTuku(r)?'T':'O');};
+  var key=function(r){return mode==='ic'?r.name:r.team;};
+  if(sc.bound.length){
+    // 位於未確認歸屬的分界點：只有「相鄰兩段以上且屬同一群」才能確定，否則待人工確認
+    if(uniq(pool.map(grp)).length>1||pool.length<2)return{state:'boundary',rules:pool};
+  }else if(uniq(pool.map(key)).length>1){
+    return{state:'conflict',rules:pool};
+  }
+  var def=pool.every(function(r){return isDefinite(r,opts);});
+  return{state:def?'confirmed':'provisional',rules:pool,atBoundary:sc.bound.length>0,teams:uniq(pool.map(function(r){return r.team||r.name;}))};
+}
+function basisOf(rules){
+  return rules.map(function(r){
+    var v=r.status==='verified'?('核實：'+(r.verifiedBy||'—')+' '+(r.verifiedAt||'')):(r.status==='test'?'測試資料':'尚未核實');
+    return idOf(r)+'｜'+(r.sheetRef||r.source||'')+'｜來源：'+(r.source||'—')+'｜'+v;
+  });
+}
+
+function judge(ds,dirRaw,kmRaw,opts){
+  opts=opts||{};
+  if(DIRS.indexOf(dirRaw)<0)return{ok:false,error:'請先選擇事故方向（東行或西行）。'};
+  var p=parseKm(kmRaw);if(!p.ok)return{ok:false,error:p.error};
+  var q=p.m;
+  var d=classify(scan(ds.rules,dirRaw,q,opts),opts,'dispatch');
+  var ic=classify(scan(ds.interchanges,dirRaw,q,opts),opts,'ic');
+  var warnings=[];
+  if(q>KNOWN_MAX_M)warnings.push('此公里數超過出動順序表所示範圍（約 K42.8），請再確認報案公里數。');
+  var isTest=!!opts.allowTest;
+  var disp={state:d.state,basis:basisOf(d.rules)};
+  var statusText,remind='',tuku=false;
+  var ids=d.rules.map(idOf).join('、');
+  if(d.state==='confirmed'){
+    tuku=d.rules.every(isTuku);
+    var v0=d.rules[0];
+    statusText=v0.status==='test'?'測試資料（假資料，非正式）':'已核實（'+(v0.verifiedBy||'—')+'）';
+    if(tuku){disp.headline='土庫分隊優先出動';disp.detail='符合已核實規則：'+ids+'。';}
+    else{
+      disp.headline='非土庫分隊優先區段';
+      disp.detail='依出動順序表，此區段標示：'+d.teams.join('、')+'（先後順序請依原表）。'+(d.atBoundary?'位於區段分界點，所屬分隊請依原表確認。':'');
+    }
+  }else if(d.state==='provisional'){
+    var tk=d.rules.every(isTuku);
+    disp.headline='待人工確認';
+    disp.detail='符合的規則尚未核實（暫定：'+(tk?'土庫分隊優先':'非土庫優先，'+d.teams.join('、'))+'），不得作為勤務依據。';
+    statusText='未核實（僅為暫定參考）';
+    remind='請對照紙本「出動順序表」及隊內規定，人工確認後出動。';
+  }else if(d.state==='boundary'){
+    disp.headline='待人工確認';
+    disp.detail='此公里數剛好位於區段分界點（'+ids+'），表上無法判斷歸屬。';
+    statusText='待確認（分界點）';
+    remind='位於分界點，請人工確認由哪個分隊優先出動。';
+  }else if(d.state==='conflict'){
+    disp.headline='規則衝突，請人工確認';
+    disp.detail='同方向同公里數符合多筆不一致的規則：'+ids+'。';
+    statusText='規則衝突';
+    remind='規則資料有重疊且結果不一致，請至「規則」頁修正，並先人工確認。';
+  }else{
+    disp.headline='待人工確認';
+    disp.detail='此公里數不在已建立的出動順序表區段內（或該區段在照片中無法辨識），無法判斷。';
+    statusText='無對應規則';
+    remind='系統無法確認，請依出動順序表人工確認。';
+  }
+  if(isTest)statusText='【測試模式】'+statusText;
+  var ref='';
+  if(ic.state==='provisional'){var x=ic.rules[0];ref='未核實參考（不可作為勤務依據）：'+x.name+'（'+(x.source||'')+'）';}
+  var icOut;
+  if(d.state==='confirmed'&&tuku){
+    if(ic.state==='confirmed'){
+      var y=ic.rules[0];
+      icOut={state:'confirmed',headline:y.name,summary:y.name,ramp:y.rampDirection||'',toward:y.toward||'',
+        detail:y.rampDirection?'進入後行車方向與事故方向相同；匝道實體位置（匝道名稱）表上未標示。':'匝道方向尚未核實，請依勤務規定人工確認。',basis:basisOf(ic.rules),ref:''};
+    }else if(ic.state==='conflict'){
+      icOut={state:'conflict',headline:'交流道規則衝突，請人工確認',summary:'規則衝突，請人工確認',ramp:'',toward:'',detail:'符合多筆交流道規則：'+ic.rules.map(idOf).join('、'),basis:basisOf(ic.rules),ref:''};
+    }else if(ic.state==='boundary'){
+      icOut={state:'boundary',headline:'待人工確認',summary:'待人工確認（交流道分界點）',ramp:'',toward:'',
+        detail:'此公里數位於交流道進入範圍的分界點（'+uniq(ic.rules.map(function(r){return r.name;})).join('／')+'），表上無法判斷由哪個交流道進入，請人工確認。',basis:basisOf(ic.rules),ref:''};
+    }else{
+      icOut={state:'unverified',headline:'尚未核實',summary:'尚未核實／待人工確認',ramp:'',toward:'',detail:NOT_VERIFIED_MSG,basis:basisOf(ic.rules),ref:ref};
+    }
+  }else if(d.state==='confirmed'){
+    icOut={state:'na',headline:'不適用（非土庫優先區段）',summary:'不適用（非土庫優先區段）',ramp:'',toward:'',detail:'此區段非土庫優先出動，不提供土庫進入交流道建議。',basis:[],ref:''};
+  }else{
+    icOut={state:'na',headline:'待人工確認',summary:'待人工確認',ramp:'',toward:'',detail:'出動優先尚未確定，不提供交流道建議。',basis:basisOf(ic.rules),ref:ref};
+  }
+  return{ok:true,dir:dirRaw,m:q,kmDisp:fmtKm(q),dispatch:disp,interchange:icOut,statusText:statusText,remind:remind,
+    warnings:warnings,testMode:isTest,confirmed:d.state==='confirmed',tuku:d.state==='confirmed'&&tuku,
+    version:ds.version,lastUpdated:ds.lastUpdated};
+}
+
+function summaryText(r,now){
+  var L=[];
+  L.push('【台78線救災快速判別】'+(r.testMode?'（測試模式・假資料）':''));
+  L.push('時間：'+now);
+  L.push('事故方向：'+r.dir);
+  L.push('事故公里數：'+r.kmDisp);
+  L.push('土庫分隊出動：'+r.dispatch.headline);
+  L.push('判斷依據：'+(r.dispatch.basis.length?r.dispatch.basis.join('；'):'無對應規則'));
+  L.push('建議交流道：'+r.interchange.summary);
+  L.push('匝道方向：'+(r.interchange.ramp||(r.interchange.state==='na'?'不適用':'尚未核實')));
+  L.push('資料狀態：'+r.statusText);
+  if(r.remind)L.push('提醒：'+r.remind);
+  L.push('規則版本：'+r.version+'（更新 '+r.lastUpdated+'）');
+  L.push('※勤務輔助工具，仍須依正式勤務規定執行');
+  return L.join('\n');
+}
+
+/* ===================== 內建規則：依官方表格照片＋隊內紅筆標註整理 =====================
+   公里數取自表上各分隊方框箭頭相鄰的黑底公里數標示；東行、西行各自獨立。
+   歸屬未確認（startConfirmed/endConfirmed=false）的端點，剛好等於該值時顯示「待人工確認」。 */
+function mkRule(id,dir,s,e,team,ref,sc,ec){
+  var tk=(team===TUKU);
+  return{ruleId:id,direction:dir,startKm:s,endKm:e,includeStart:true,includeEnd:tk,team:team,sheetRef:ref,
+    source:SRC+(tk?'；黃色標示＋紅筆標註':''),status:'verified',verifiedBy:VBY,verifiedAt:VAT,
+    startConfirmed:sc,endConfirmed:ec,enabled:true,
+    note:tk?'黃色標示「土庫」；範圍取自方框箭頭相鄰的公里數標示。':'非土庫優先區段；表上標示分隊如左，先後順序請依原表。'};
+}
+function mkIC(id,name,dir,s,e,toward,note){
+  return{icId:id,name:name,direction:dir,rampDirection:'進入'+dir+'車道（與事故方向相同）',toward:toward,startKm:s,endKm:e,
+    includeStart:true,includeEnd:false,startConfirmed:false,endConfirmed:false,
+    source:'土庫消防隊紅筆標註（官方表 114.07.23 照片）',status:'verified',verifiedBy:VBY,verifiedAt:VAT,enabled:true,note:note};
+}
+var DEFAULT_DS={
+  schema:'tk78-rules',version:'1.0.1',lastUpdated:'2026-10-15',sourceDoc:SRC,
+  rules:[
+    mkRule('W-TK-01','西行',14.9,22.1,TUKU,'西行（上排）第4格「高鐵／土庫」，土庫黃色標示',false,true),
+    mkRule('W-TK-02','西行',22.1,25.0,TUKU,'西行（上排）第5格「虎尾／土庫」，土庫黃色標示',true,false),
+    mkRule('E-TK-01','東行',22.9,25.8,TUKU,'東行（下排）第5格「土庫／高鐵」，土庫黃色標示',false,true),
+    mkRule('E-TK-02','東行',25.8,31.0,TUKU,'東行（下排）第6格「土庫／虎尾」，土庫黃色標示',true,false),
+    mkRule('W-OT-02','西行',0.6,7.7,'台西／東勢','西行（上排）第2格「台西／東勢」',false,false),
+    mkRule('W-OT-03','西行',7.7,14.9,'元長／褒忠','西行（上排）第3格「元長／褒忠」',false,false),
+    mkRule('W-OT-06','西行',25.0,29.9,'大埤／斗南','西行（上排）第6格「大埤／斗南」',false,false),
+    mkRule('W-OT-07','西行',29.9,32.2,'斗南／大埤','西行（上排）第7格「斗南／大埤」',false,false),
+    mkRule('W-OT-08','西行',32.2,39.1,'古坑／公園','西行（上排）第8格「古坑／公園」',false,false),
+    mkRule('W-OT-09','西行',39.1,42.8,'斗六／林內','西行（上排）第9格「斗六／林內」',false,false),
+    mkRule('E-OT-01','東行',0,1.1,'台西／東勢','東行（下排）第1格「台西／東勢」',false,false),
+    mkRule('E-OT-02','東行',1.1,8.4,'台西／東勢','東行（下排）第2格「台西／東勢」',false,false),
+    mkRule('E-OT-03','東行',8.4,15.6,'東勢／台西','東行（下排）第3格「東勢／台西」',false,false),
+    mkRule('E-OT-04','東行',15.6,22.9,'元長／褒忠','東行（下排）第4格「元長／褒忠」',false,false),
+    mkRule('E-OT-07','東行',31.0,32.8,'斗南／大埤','東行（下排）第7格「斗南／大埤」',false,false),
+    mkRule('E-OT-08','東行',32.8,39.7,'斗南／大埤','東行（下排）第8格「斗南／大埤」',false,false)
+  ],
+  interchanges:[
+    mkIC('IC-W-01','土庫交流道','西行',14.9,22.1,'西行（往台西方向）','紅筆「土」標於西行 14.9～22.1；表上土庫交流道位於西行 22.1 處。'),
+    mkIC('IC-W-02','虎尾交流道','西行',22.1,25.0,'西行（往台西方向）','紅筆「虎」標於西行 22.1～25；表上虎尾交流道位於西行 25.0 處。'),
+    mkIC('IC-E-01','土庫交流道','東行',22.9,25.8,'東行（往古坑系統方向）','紅筆「土」標於東行 22.9～25.8；表上土庫交流道位於東行 22.9 處。'),
+    mkIC('IC-E-02','虎尾交流道','東行',25.8,31.0,'東行（往古坑系統方向）','紅筆「虎」標於東行 25.8～31；表上虎尾交流道位於東行 25.8 處。')
+  ]
+};
+
+/* ===================== 匯入驗證 ===================== */
+function validateDataset(input,opts){
+  opts=opts||{};var errors=[],o=input;
+  if(typeof input==='string'){try{o=JSON.parse(input);}catch(e){return{ok:false,errors:['不是有效的 JSON 檔：'+e.message]};}}
+  if(!o||typeof o!=='object'||Array.isArray(o))return{ok:false,errors:['檔案內容必須是 JSON 物件。']};
+  if(o.schema!=='tk78-rules')errors.push('schema 必須為 "tk78-rules"。');
+  if(typeof o.version!=='string'||!o.version.trim())errors.push('缺少規則版本 version。');
+  var out={schema:'tk78-rules',version:typeof o.version==='string'?o.version.slice(0,40):'',lastUpdated:typeof o.lastUpdated==='string'?o.lastUpdated.slice(0,20):'',sourceDoc:typeof o.sourceDoc==='string'?o.sourceDoc.slice(0,200):'',rules:[],interchanges:[]};
+  var stOk=opts.allowTest?['verified','pending','test']:['verified','pending'];
+  function str(v){return typeof v==='string'&&v.trim().length>0;}
+  function s(v){return typeof v==='string'?v.slice(0,300):'';}
+  function okn(v){return typeof v==='number'&&isFinite(v)&&v>=0&&v<=99.999&&Math.abs(v*1000-Math.round(v*1000))<1e-6;}
+  function chk(list,kind,key,label){
+    var norm=[];
+    if(!Array.isArray(list)){errors.push(label+' 必須是陣列。');return norm;}
+    var seen={};
+    list.forEach(function(raw,i){
+      var w=label+'['+(i+1)+']';
+      if(!raw||typeof raw!=='object'||Array.isArray(raw)){errors.push(w+' 必須是物件。');return;}
+      var it=Object.assign({},raw);
+      if(typeof it.boundaryConfirmed==='boolean'){ // 相容舊版欄位
+        if(it.startConfirmed===undefined)it.startConfirmed=it.boundaryConfirmed;
+        if(it.endConfirmed===undefined)it.endConfirmed=it.boundaryConfirmed;
+      }
+      var id=it[key];
+      if(typeof id!=='string'||!id.trim()||id.length>40)errors.push(w+' 缺少有效的 '+key+'。');
+      else if(seen[id])errors.push(w+' '+key+' 重複：'+id);else seen[id]=1;
+      if(DIRS.indexOf(it.direction)<0)errors.push(w+' direction 必須是「東行」或「西行」。');
+      var hasS=it.startKm!=null,hasE=it.endKm!=null;
+      if(!(kind==='ic'&&!hasS&&!hasE)){
+        if(!okn(it.startKm)||!okn(it.endKm))errors.push(w+' 起訖公里數必須是 0～99.999 的數字（最多三位小數）。');
+        else if(!(it.startKm<it.endKm))errors.push(w+' 起點必須小於終點。');
+      }
+      ['includeStart','includeEnd','startConfirmed','endConfirmed','enabled'].forEach(function(k){if(typeof it[k]!=='boolean')errors.push(w+' '+k+' 必須是 true 或 false。');});
+      if(stOk.indexOf(it.status)<0)errors.push(w+' status 必須是 '+stOk.join('／')+(it.status==='test'?'（測試資料不得匯入正式規則）':'')+'。');
+      if(it.status==='verified'){
+        if(!str(it.verifiedBy))errors.push(w+' 已核實資料必須填 verifiedBy（核實人／依據）。');
+        if(!str(it.source))errors.push(w+' 已核實資料必須填 source（來源）。');
+        if(kind==='ic'&&!hasS)errors.push(w+' 已核實交流道必須填適用公里數。');
+      }
+      if(kind==='rule'&&!str(it.team))errors.push(w+' 缺少 team（優先出動分隊）。');
+      if(kind==='ic'&&!str(it.name))errors.push(w+' 缺少 name（交流道名稱）。');
+      norm.push(it);
+    });
+    return norm;
+  }
+  var nr=chk(o.rules,'rule','ruleId','rules');
+  var ni=chk(o.interchanges,'ic','icId','interchanges');
+  if(errors.length)return{ok:false,errors:errors};
+  nr.forEach(function(it){out.rules.push({ruleId:it.ruleId,direction:it.direction,startKm:it.startKm,endKm:it.endKm,includeStart:it.includeStart,includeEnd:it.includeEnd,team:s(it.team),sheetRef:s(it.sheetRef),source:s(it.source),status:it.status,verifiedBy:s(it.verifiedBy),verifiedAt:s(it.verifiedAt),startConfirmed:it.startConfirmed,endConfirmed:it.endConfirmed,enabled:it.enabled,note:s(it.note)});});
+  ni.forEach(function(it){var has=it.startKm!=null;out.interchanges.push({icId:it.icId,name:s(it.name),direction:it.direction,rampDirection:s(it.rampDirection),toward:s(it.toward),startKm:has?it.startKm:null,endKm:has?it.endKm:null,includeStart:it.includeStart,includeEnd:it.includeEnd,startConfirmed:it.startConfirmed,endConfirmed:it.endConfirmed,source:s(it.source),status:it.status,verifiedBy:s(it.verifiedBy),verifiedAt:s(it.verifiedAt),enabled:it.enabled,note:s(it.note)});});
+  return{ok:true,errors:[],ds:out};
+}
+
+/* ===================== 測試用假資料（絕不寫入正式規則） ===================== */
+var FAKE_OTHER='測試他隊（假）';
+function fxRule(id,dir,s,e,inS,inE,st,bc,team){var c=bc!==false;return{ruleId:id,direction:dir,startKm:s,endKm:e,includeStart:inS,includeEnd:inE,team:team||TUKU,sheetRef:'【測試】假資料',source:'測試假資料',status:st,verifiedBy:st==='test'?'測試':'',verifiedAt:'',startConfirmed:c,endConfirmed:c,enabled:true,note:'測試假資料，非官方'};}
+function fxIC(id,name,dir,s,e,ramp,st){return{icId:id,name:name,direction:dir,rampDirection:ramp,toward:ramp?'測試方向（假）':'',startKm:s,endKm:e,includeStart:true,includeEnd:false,startConfirmed:true,endConfirmed:true,source:'測試假資料',status:st,verifiedBy:st==='test'?'測試':'',verifiedAt:'',enabled:true,note:'測試假資料'};}
+function buildFixture(){
+  return{schema:'tk78-rules',version:'TEST-FAKE',lastUpdated:'TEST',sourceDoc:'測試假資料',
+    rules:[
+      fxRule('T-E-01','東行',10.0,12.0,true,false,'test'),
+      fxRule('T-E-02','東行',14.0,16.0,true,true,'test'),
+      fxRule('T-E-03','東行',18.0,19.0,true,true,'pending'),
+      fxRule('T-E-04','東行',40.0,41.0,true,true,'test',true,FAKE_OTHER),
+      fxRule('T-W-01','西行',30.0,31.0,true,true,'test'),
+      fxRule('T-W-02','西行',20.0,25.0,true,true,'test'),
+      fxRule('T-W-03','西行',24.0,28.0,true,true,'test',true,FAKE_OTHER),
+      fxRule('T-W-04','西行',5.0,6.0,true,false,'test',false)
+    ],
+    interchanges:[
+      fxIC('T-IC-E-01','測試甲交流道（假）','東行',10.0,12.0,'測試匝道（假）','test'),
+      fxIC('T-IC-E-02','測試乙交流道（假）','東行',14.0,16.0,'','pending'),
+      fxIC('T-IC-E-03','測試丙交流道（假）','東行',18.0,19.0,'','pending')
+    ]};
+}
+
+/* ===================== 自動測試 ===================== */
+function runSelfTests(){
+  var R=[];function t(name,cond,detail){R.push({name:name,pass:!!cond,detail:detail||''});}
+  var F=buildFixture(),T={allowTest:true};
+  function J(ds,d,k,o){return judge(ds,d,k,o||T);}
+  // 解析
+  ['24.6','K24.6','k24.6','24K+600','K24+600','24k+600','Ｋ24．6','24.600','24+600'].forEach(function(x){var p=parseKm(x);t('解析「'+x+'」=24600m',p.ok&&p.m===24600,p.ok?String(p.m):p.error);});
+  t('解析 24 = 24000m',parseKm('24').m===24000);
+  t('解析 K0.5 = 500m',parseKm('K0.5').m===500);
+  ['','   ','-1','-0.5','abc','24..6','24K+6','24K+6000','1000','24.6789','K','24.','24K','－5'].forEach(function(x){t('錯誤格式被拒絕：「'+x+'」',parseKm(x).ok===false);});
+  // 方向
+  ['','南下',null,undefined,'東','EAST'].forEach(function(d){t('方向錯誤被拒絕：'+String(d),J(F,d,'10.5').ok===false);});
+  // 測試資料：有效區間
+  var a=J(F,'東行','10.5');t('【測試】東行有效區間 10.5 → 土庫優先（確定）',a.ok&&a.tuku&&a.dispatch.headline==='土庫分隊優先出動');
+  t('【測試】東行 10.5 → 推薦測試甲交流道＋匝道',a.interchange.state==='confirmed'&&a.interchange.headline.indexOf('測試甲')===0&&a.interchange.ramp==='測試匝道（假）');
+  t('【測試】西行有效區間 30.5 → 土庫優先（確定）',J(F,'西行','30.5').tuku===true);
+  t('起點（含）10.0 → 屬於',J(F,'東行','10.0').tuku===true);
+  t('終點（不含）12.0 → 不屬於且無規則',J(F,'東行','12.0').tuku===false&&J(F,'東行','12.0').dispatch.state==='unknown');
+  t('終點（含）16.0 → 屬於',J(F,'東行','16.0').tuku===true);
+  t('K10+000 與 10.0 結果相同',J(F,'東行','10K+000').tuku===J(F,'東行','10.0').tuku);
+  var c=J(F,'東行','20.0');t('不在任何區間 → 待人工確認',c.ok&&!c.confirmed&&c.dispatch.headline==='待人工確認'&&c.dispatch.state==='unknown');
+  var d=J(F,'東行','15.0');t('出動已確認但交流道未核實 → 指定提示文字',d.tuku&&d.interchange.detail===NOT_VERIFIED_MSG&&d.interchange.state==='unverified');
+  t('未核實交流道只列為「未核實參考」',d.interchange.ref.indexOf('未核實參考')===0&&d.interchange.headline==='尚未核實');
+  var e=J(F,'東行','18.5');t('待核實規則 → 不產生確定判斷',e.ok&&!e.confirmed&&e.dispatch.state==='provisional'&&e.dispatch.headline==='待人工確認');
+  t('出動未確認時不建議交流道',e.interchange.state==='na');
+  var n=J(F,'東行','40.5');t('非土庫區段 → 非土庫優先，且不提供交流道',n.confirmed&&!n.tuku&&n.dispatch.headline==='非土庫分隊優先區段'&&n.interchange.state==='na');
+  var f=J(F,'西行','24.5');t('重疊且結果不一致 → 規則衝突',f.ok&&f.dispatch.state==='conflict'&&f.dispatch.headline==='規則衝突，請人工確認'&&!f.confirmed);
+  t('重疊區外仍正常（西行 22.0）',J(F,'西行','22.0').tuku===true);
+  t('分界點歸屬未確認且無相鄰規則 → 待人工確認',J(F,'西行','5.0').dispatch.state==='boundary'&&J(F,'西行','6.0').dispatch.state==='boundary');
+  t('區間內側（西行 5.5）仍屬確定',J(F,'西行','5.5').tuku===true);
+  t('相同公里數 30.5：西行土庫、東行無規則',J(F,'西行','30.5').tuku&&!J(F,'東行','30.5').tuku);
+  t('相同公里數 10.5：東行土庫、西行無規則',J(F,'東行','10.5').tuku&&!J(F,'西行','10.5').tuku);
+  var G=JSON.parse(JSON.stringify(F));G.rules.forEach(function(r){if(r.ruleId==='T-E-01')r.enabled=false;});
+  t('停用的規則不參與判斷',J(G,'東行','10.5').tuku===false);
+  t('非測試模式不採用 test 規則',judge(F,'東行','10.5',{}).tuku===false);
+
+  // ===== 內建正式規則（照片整理）=====
+  var D=DEFAULT_DS;
+  var all=D.rules.concat(D.interchanges);
+  t('內建規則不含任何「測試」資料',all.every(function(x){return x.status!=='test';}));
+  t('內建已核實項目皆有核實依據與來源',all.every(function(x){return x.status!=='verified'||(x.verifiedBy&&x.source);}));
+  t('內建規則：土庫優先規則東行 2 筆、西行 2 筆',D.rules.filter(isTuku).filter(function(x){return x.direction==='東行';}).length===2&&D.rules.filter(isTuku).filter(function(x){return x.direction==='西行';}).length===2);
+  function Jd(dir,k){return judge(D,dir,k);}
+  var w20=Jd('西行','20.0');t('西行 K20.0 → 土庫優先，土庫交流道（西行）',w20.tuku&&w20.interchange.headline==='土庫交流道'&&w20.interchange.ramp.indexOf('西行')>=0);
+  var w23=Jd('西行','23.0');t('西行 K23.0 → 土庫優先，虎尾交流道',w23.tuku&&w23.interchange.headline==='虎尾交流道');
+  var e24=Jd('東行','K24.6');t('東行 K24.6 → 土庫優先，土庫交流道（東行）',e24.tuku&&e24.interchange.headline==='土庫交流道'&&e24.interchange.ramp.indexOf('東行')>=0&&e24.statusText.indexOf('已核實')===0);
+  var w24=Jd('西行','K24.6');t('相同公里數 K24.6：西行為虎尾交流道、東行為土庫交流道',w24.tuku&&w24.interchange.headline==='虎尾交流道'&&e24.interchange.headline==='土庫交流道');
+  t('東行 K27.0 → 虎尾交流道',Jd('東行','27').interchange.headline==='虎尾交流道');
+  var w221=Jd('西行','K22.1');t('西行 K22.1（兩段共用分界）→ 土庫優先確定，交流道待人工確認',w221.tuku&&w221.interchange.state==='boundary'&&w221.interchange.headline==='待人工確認');
+  var e258=Jd('東行','K25.8');t('東行 K25.8（兩段共用分界）→ 土庫優先確定，交流道待人工確認',e258.tuku&&e258.interchange.state==='boundary');
+  [['西行','14.9'],['西行','25.0'],['東行','22.9'],['東行','31.0']].forEach(function(x){var r=Jd(x[0],x[1]);t(x[0]+' K'+x[1]+'（土庫範圍外緣點）→ 待人工確認',r.dispatch.state==='boundary'&&r.dispatch.headline==='待人工確認'&&!r.tuku);});
+  [['西行','14.8','元長／褒忠'],['西行','25.1','大埤／斗南'],['東行','22.8','元長／褒忠'],['東行','31.1','斗南／大埤'],['西行','10','元長／褒忠'],['東行','5','台西／東勢']].forEach(function(x){var r=Jd(x[0],x[1]);t(x[0]+' K'+x[1]+' → 非土庫優先（'+x[2]+'）',r.confirmed&&!r.tuku&&r.dispatch.detail.indexOf(x[2])>=0);});
+  var w77=Jd('西行','7.7');t('西行 K7.7（兩個非土庫區段分界）→ 仍可確定非土庫',w77.confirmed&&!w77.tuku);
+  t('西行 K0.3（表上無規則）→ 待人工確認',Jd('西行','0.3').dispatch.state==='unknown');
+  t('東行 K41（照片終點無法辨識）→ 待人工確認',Jd('東行','41').dispatch.state==='unknown');
+  t('超出 K42.8 顯示警告',Jd('東行','50').warnings.length===1&&Jd('東行','41').warnings.length===0);
+  var bad=0;for(var m=0;m<=45000;m+=50){
+    var wi=judge(D,'西行',String(m/1000)),ei=judge(D,'東行',String(m/1000));
+    if(wi.tuku!==(m>14900&&m<25000))bad++;
+    if(ei.tuku!==(m>22900&&m<31000))bad++;
+  }
+  t('掃描 K0～K45（每 50m、兩方向）：土庫優先範圍＝西行(14.9,25.0)、東行(22.9,31.0) 且與公里數吻合',bad===0,'不符筆數='+bad);
+  // 匯入驗證
+  t('內建規則可通過匯入驗證',validateDataset(JSON.stringify(D)).ok);
+  t('匯出再匯入（round-trip）正常',validateDataset(JSON.stringify(validateDataset(D).ds)).ok);
+  function mut(fn){var o=JSON.parse(JSON.stringify(D));fn(o);return o;}
+  var legacy=mut(function(o){o.rules.concat(o.interchanges).forEach(function(x){delete x.startConfirmed;delete x.endConfirmed;x.boundaryConfirmed=true;});});
+  t('舊版欄位 boundaryConfirmed 可相容匯入',validateDataset(legacy).ok);
+  var bads=[
+    ['不是 JSON','this is not json'],['空物件','{}'],['陣列根層','[]'],
+    ['rules 非陣列',JSON.stringify({schema:'tk78-rules',version:'1',rules:'x',interchanges:[]})],
+    ['缺 interchanges',JSON.stringify({schema:'tk78-rules',version:'1',rules:[]})],
+    ['schema 錯誤',JSON.stringify({schema:'x',version:'1',rules:[],interchanges:[]})]
+  ];
+  bads.forEach(function(x){t('匯入錯誤：'+x[0],validateDataset(x[1]).ok===false);});
+  var muts=[
+    ['方向錯誤',function(o){o.rules[0].direction='北上';}],
+    ['起點>=終點',function(o){o.rules[0].startKm=30;}],
+    ['公里數為負',function(o){o.rules[0].startKm=-1;}],
+    ['公里數非數字',function(o){o.rules[0].endKm='abc';}],
+    ['ruleId 重複',function(o){o.rules[1].ruleId=o.rules[0].ruleId;}],
+    ['status 非法',function(o){o.rules[0].status='ok';}],
+    ['測試資料混入正式規則',function(o){o.rules[0].status='test';}],
+    ['已核實卻沒有核實依據',function(o){o.rules[0].verifiedBy='';}],
+    ['布林欄位型別錯誤',function(o){o.rules[0].enabled='yes';}],
+    ['歸屬確認欄位型別錯誤',function(o){o.rules[0].startConfirmed='x';}],
+    ['缺少 team',function(o){o.rules[0].team='';}],
+    ['交流道缺名稱',function(o){o.interchanges[0].name='';}],
+    ['交流道只填一端公里數',function(o){o.interchanges[0].endKm=null;}]
+  ];
+  muts.forEach(function(x){t('匯入錯誤：'+x[0],validateDataset(mut(x[1])).ok===false);});
+  t('合法修改可匯入',validateDataset(mut(function(o){o.rules[0].note='ok';})).ok===true);
+  t('HTML 跳脫',esc('<b>"&\'')==='&lt;b&gt;&quot;&amp;&#39;');
+  return R;
+}
+</script>
+
+<script id="ui">
+(function(){
+var pipWin=null;
+var $=function(id){return document.getElementById(id)||(pipWin&&pipWin.document.getElementById(id))||null;};
+var qa=function(sel){return (pipWin?pipWin.document:document).querySelectorAll(sel);};
+var LS_DS='tk78.ds.v2',LS_H='tk78.hist.v1';
+var ds=loadDS(),testMode=false,selDir='',last=null;
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function loadDS(){try{var t=localStorage.getItem(LS_DS);if(t){var v=validateDataset(t);if(v.ok)return v.ds;}}catch(e){}return clone(DEFAULT_DS);}
+function saveDS(){ds.lastUpdated=todayStr();try{localStorage.setItem(LS_DS,JSON.stringify(ds));}catch(e){toast('⚠ 無法寫入本機儲存（隱私模式？）請改用匯出 JSON 備份');}renderAll();}
+function activeDs(){return testMode?buildFixture():ds;}
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(function(){t.style.display='none';},2600);}
+function nowStr(){var d=new Date();return todayStr()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function badge(st){return st==='verified'?'<span class="badge ok">✔ 已核實資料</span>':st==='test'?'<span class="badge test">🧪 測試資料</span>':'<span class="badge pend">⚠ 待核實</span>';}
+function rangeText(r){if(r.startKm==null)return '適用公里數：未填（尚未核實）';return fmtKmShort(r.startKm)+' ～ '+fmtKmShort(r.endKm)+'　起點'+(r.includeStart?'含':'不含')+(r.startConfirmed?'':'（歸屬未確認）')+'／終點'+(r.includeEnd?'含':'不含')+(r.endConfirmed?'':'（歸屬未確認）');}
+
+/* ---- 導覽 ---- */
+document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){
+  ['viewMain','viewRules','viewTest','viewHelp'].forEach(function(v){$(v).hidden=(v!==b.dataset.view);});
+  qa('nav button').forEach(function(x){x.setAttribute('aria-current',x===b?'true':'false');});
+  (pipWin||window).scrollTo(0,0);
+});});
+
+/* ---- 判別 ---- */
+document.querySelectorAll('.dir').forEach(function(b){b.addEventListener('click',function(){
+  selDir=b.dataset.dir;qa('.dir').forEach(function(x){x.setAttribute('aria-checked',x===b?'true':'false');});hideErr();
+});});
+function showErr(m){var e=$('errBox');e.textContent='⛔ '+m;e.hidden=false;$('result').innerHTML='';last=null;}
+function hideErr(){$('errBox').hidden=true;}
+function doJudge(){
+  hideErr();
+  var r=judge(activeDs(),selDir,$('km').value,{allowTest:testMode});
+  if(!r.ok){showErr(r.error);return;}
+  last=r;renderResult(r);addHist(r);
+  $('result').scrollIntoView({behavior:'auto',block:'start'});
+}
+$('goBtn').addEventListener('click',doJudge);
+$('km').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();doJudge();}});
+$('resetBtn').addEventListener('click',function(){selDir='';qa('.dir').forEach(function(x){x.setAttribute('aria-checked','false');});$('km').value='';hideErr();$('result').innerHTML='';last=null;window.scrollTo(0,0);});
+
+function renderResult(r){
+  var tuku=r.tuku,cls=tuku?'confirmed':(r.confirmed?'info':'warn'),icOk=r.interchange.state==='confirmed';
+  var big,ramp='',notes=[];
+  if(tuku&&icOk){big='🚏 '+r.interchange.headline;ramp=r.interchange.ramp;}
+  else if(r.confirmed&&!tuku){big='不適用';notes.push(r.dispatch.detail);}
+  else{
+    big='待人工確認';
+    if(tuku)notes.push(r.interchange.detail);
+    else{notes.push(r.dispatch.detail);if(r.remind)notes.push(r.remind);}
+  }
+  var icon=tuku?'✔ ':(r.confirmed?'ℹ ':'⚠ ');
+  var h='<div class="res '+cls+'">';
+  if(r.testMode)h+='<div class="testbanner" style="margin:-14px -14px 10px;border-radius:9px 9px 0 0">🧪 測試模式：假資料，非勤務依據</div>';
+  h+='<div class="bar">'+icon+esc(r.dispatch.headline)+'</div>';
+  h+='<p class="step" style="margin-bottom:2px"><span>4</span>進入交流道</p>';
+  h+='<div class="big">'+esc(big)+'</div>';
+  if(ramp)h+='<div class="ramp">'+esc(ramp)+'</div>';
+  notes.concat(r.warnings).forEach(function(n){if(n)h+='<div class="remind">'+esc(n)+'</div>';});
+  h+='<div class="row" style="margin-top:12px"><button class="btn navy" id="copyBtn" type="button">一鍵複製報案摘要</button><button class="btn" id="printBtn" type="button">列印</button></div>';
+  h+='<details><summary>詳細依據</summary><dl class="kv">';
+  h+='<dt>事故方向</dt><dd>'+esc(r.dir)+'</dd>';
+  h+='<dt>事故公里數</dt><dd>'+esc(r.kmDisp)+'</dd>';
+  h+='<dt>出動判斷</dt><dd><b>'+esc(r.dispatch.headline)+'</b>　'+esc(r.dispatch.detail)+'</dd>';
+  h+='<dt>判斷依據</dt><dd>'+(r.dispatch.basis.length?r.dispatch.basis.map(esc).join('<br>'):'無對應規則')+'</dd>';
+  h+='<dt>交流道</dt><dd><b>'+esc(r.interchange.headline)+'</b>'+(r.interchange.toward?'<br>通往國道方向：'+esc(r.interchange.toward):'')+'</dd>';
+  if(r.interchange.basis&&r.interchange.basis.length)h+='<dt>交流道依據</dt><dd>'+r.interchange.basis.map(esc).join('<br>')+'</dd>';
+  h+='<dt>匝道方向</dt><dd>'+(r.interchange.ramp?esc(r.interchange.ramp):(r.interchange.state==='na'?'不適用':'尚未核實'))+'</dd>';
+  h+='<dt>資料確認狀態</dt><dd><b>'+esc(r.statusText)+'</b></dd>';
+  h+='<dt>規則版本</dt><dd>'+esc(r.version)+'（更新 '+esc(r.lastUpdated)+'）</dd>';
+  h+='</dl>';
+  if(icOk&&r.interchange.detail)h+='<div class="remind">'+esc(r.interchange.detail)+'</div>';
+  if(r.interchange.ref)h+='<div class="remind">'+esc(r.interchange.ref)+'</div>';
+  h+='</details></div>';
+  $('result').innerHTML=h;
+  $('copyBtn').addEventListener('click',function(){copyText(summaryText(last,nowStr())).then(function(ok){toast(ok?'✔ 已複製報案摘要':'複製失敗，請手動選取');});});
+  $('printBtn').addEventListener('click',printSheet);
+}
+function copyText(t){
+  var w=pipWin||window,d=w.document;
+  function fb(){var ta=d.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';d.body.appendChild(ta);ta.select();var ok=false;try{ok=d.execCommand('copy');}catch(e){}ta.remove();return Promise.resolve(ok);}
+  if(w.navigator.clipboard&&w.navigator.clipboard.writeText)return w.navigator.clipboard.writeText(t).then(function(){return true;},fb);
+  return fb();
+}
+
+/* ---- 歷史 ---- */
+function getHist(){try{return JSON.parse(localStorage.getItem(LS_H)||'[]');}catch(e){return [];}}
+function addHist(r){
+  var h=getHist();h.unshift({t:nowStr(),d:r.dir,k:r.kmDisp,h:(r.testMode?'【測試】':'')+r.dispatch.headline,raw:r.m});
+  h=h.slice(0,10);try{localStorage.setItem(LS_H,JSON.stringify(h));}catch(e){}renderHist();
+}
+function renderHist(){
+  var h=getHist();
+  $('histList').innerHTML=h.length?h.map(function(x,i){return '<div class="item"><div class="sm">'+esc(x.t)+'</div><b>'+esc(x.d)+' '+esc(x.k)+'</b><br>'+esc(x.h)+'<div class="btns"><button class="btn sm" data-reuse="'+i+'" type="button">帶入重新判別</button></div></div>';}).join(''):'<div class="hint">尚無紀錄。</div>';
+}
+$('histList').addEventListener('click',function(e){var i=e.target.getAttribute('data-reuse');if(i==null)return;var x=getHist()[+i];if(!x)return;selDir=x.d;qa('.dir').forEach(function(b){b.setAttribute('aria-checked',b.dataset.dir===selDir?'true':'false');});$('km').value=(x.raw/1000).toFixed(3);window.scrollTo(0,0);});
+$('histClear').addEventListener('click',function(){if(confirm('確定清除所有查詢紀錄？')){try{localStorage.removeItem(LS_H);}catch(e){}renderHist();}});
+
+/* ---- 狀態列 ---- */
+function counts(){var all=ds.rules.concat(ds.interchanges);return{v:all.filter(function(x){return x.status==='verified'&&x.enabled;}).length,p:all.filter(function(x){return x.status==='pending'&&x.enabled;}).length};}
+function renderBanner(){
+  var c=counts(),b=$('dataBanner');
+  $('metaLine').textContent='規則版本 '+ds.version+'｜最後更新 '+ds.lastUpdated+'｜程式 v'+APP_VERSION;
+  $('testBanner').hidden=!testMode;
+  var diff=(ds.version!==DEFAULT_DS.version)?'　（本機規則版本與程式內建 '+DEFAULT_DS.version+' 不同）':'';
+  if(c.v===0){b.className='databanner bad';b.textContent='⚠ 目前沒有任何「已核實」規則：所有結果皆為「待人工確認」，不得作為勤務依據。'+diff;}
+  else{b.className='databanner';b.textContent=diff.trim();}
+  b.hidden=!b.textContent;
+}
+
+/* ---- 規則管理 ---- */
+function itemHTML(kind,it){
+  var id=kind==='rule'?it.ruleId:it.icId;
+  var h='<div class="item'+(it.enabled?'':' off')+'">'+badge(it.status)+'<b>'+esc(id)+'</b>'+(it.enabled?'':'　<b>（停用中）</b>');
+  h+='<div>'+(kind==='ic'?esc(it.name)+'　':'')+esc(it.direction)+'　'+esc(rangeText(it))+'</div>';
+  if(kind==='rule')h+='<div class="sm">優先分隊：'+esc(it.team)+'｜表上位置：'+esc(it.sheetRef)+'</div>';
+  else h+='<div class="sm">匝道方向：'+(it.rampDirection?esc(it.rampDirection):'未核實')+'｜通往國道方向：'+(it.toward?esc(it.toward):'未核實')+'</div>';
+  h+='<div class="sm">來源：'+esc(it.source)+(it.status==='verified'?'｜核實：'+esc(it.verifiedBy)+' '+esc(it.verifiedAt):'')+'</div>';
+  if(it.note)h+='<div class="sm">備註：'+esc(it.note)+'</div>';
+  h+='<div class="btns"><button class="btn sm" data-act="edit" data-k="'+kind+'" data-id="'+esc(id)+'" type="button">編輯</button><button class="btn sm" data-act="toggle" data-k="'+kind+'" data-id="'+esc(id)+'" type="button">'+(it.enabled?'停用':'啟用')+'</button><button class="btn sm danger" data-act="del" data-k="'+kind+'" data-id="'+esc(id)+'" type="button">刪除</button></div></div>';
+  return h;
+}
+function renderRules(){
+  $('rulesMeta').textContent='版本 '+ds.version+'｜更新 '+ds.lastUpdated+'｜資料來源：'+(ds.sourceDoc||'—')+'。此頁只管理「正式規則」，測試假資料另存。';
+  $('ruleList').innerHTML=ds.rules.length?ds.rules.map(function(x){return itemHTML('rule',x);}).join(''):'<div class="hint">尚無規則。</div>';
+  $('icList').innerHTML=ds.interchanges.length?ds.interchanges.map(function(x){return itemHTML('ic',x);}).join(''):'<div class="hint">尚無交流道資料。</div>';
+}
+function findItem(kind,id){var l=kind==='rule'?ds.rules:ds.interchanges,k=kind==='rule'?'ruleId':'icId';return l.filter(function(x){return x[k]===id;})[0];}
+document.getElementById('viewRules').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-act]');if(!b)return;
+  var kind=b.dataset.k,id=b.dataset.id,it=findItem(kind,id);if(!it)return;
+  if(b.dataset.act==='edit')openForm(kind,id);
+  else if(b.dataset.act==='toggle'){it.enabled=!it.enabled;saveDS();}
+  else if(b.dataset.act==='del'){if(confirm('確定刪除 '+id+'？此動作無法復原（建議先匯出備份）。')){var l=kind==='rule'?ds.rules:ds.interchanges,k=kind==='rule'?'ruleId':'icId';var idx=l.findIndex(function(x){return x[k]===id;});l.splice(idx,1);saveDS();}}
+});
+$('addRule').addEventListener('click',function(){openForm('rule',null);});
+$('addIC').addEventListener('click',function(){openForm('ic',null);});
+$('editVer').addEventListener('click',function(){var v=prompt('請輸入新的規則版本（例如 1.0.0）',ds.version);if(v&&v.trim()){ds.version=v.trim().slice(0,40);saveDS();}});
+$('resetDs').addEventListener('click',function(){if(confirm('將全部規則還原為程式內建版本，並覆蓋目前本機規則。\n建議先匯出 JSON 備份。確定？')){ds=clone(DEFAULT_DS);try{localStorage.removeItem(LS_DS);}catch(e){}renderAll();toast('已還原為內建規則');}});
+
+function openForm(kind,id){
+  var it=id?findItem(kind,id):null,v=it||{},key=kind==='rule'?'ruleId':'icId';
+  var dlg=$('dlg');
+  function chk(n,l,val){return '<label class="chk"><input type="checkbox" name="'+n+'"'+(val?' checked':'')+'>'+l+'</label>';}
+  var h='<form id="frm" class="frm"><h2>'+(it?'編輯':'新增')+(kind==='rule'?'勤務規則':'交流道進入規則')+'</h2><div id="ferr" class="err" role="alert" hidden></div>';
+  h+='<label>編號'+(kind==='rule'?'（ruleId）':'（icId）')+'<input type="text" name="id" value="'+esc(v[key]||'')+'"'+(it?' readonly':'')+' required></label>';
+  if(kind==='ic')h+='<label>交流道名稱<input type="text" name="name" value="'+esc(v.name||'')+'" required></label>';
+  h+='<label>事故方向<select name="direction"><option value="東行"'+(v.direction==='東行'?' selected':'')+'>東行</option><option value="西行"'+(v.direction==='西行'?' selected':'')+'>西行</option></select></label>';
+  h+='<label>起始公里數'+(kind==='ic'?'（未核實可留白）':'')+'<input type="text" name="start" value="'+(v.startKm!=null?esc(String(v.startKm)):'')+'" placeholder="例：22.9"></label>';
+  h+='<label>結束公里數'+(kind==='ic'?'（未核實可留白）':'')+'<input type="text" name="end" value="'+(v.endKm!=null?esc(String(v.endKm)):'')+'" placeholder="例：25.8"></label>';
+  h+=chk('incS','包含起始公里數',it?v.includeStart:true)+chk('incE','包含結束公里數',it?v.includeEnd:false)+chk('sc','起始點歸屬已確認（未勾選時，剛好等於起始公里數會顯示待人工確認）',it?v.startConfirmed:false)+chk('ec','結束點歸屬已確認（未勾選時，剛好等於結束公里數會顯示待人工確認）',it?v.endConfirmed:false);
+  if(kind==='rule'){h+='<label>優先出動分隊（填「土庫分隊」才會視為土庫優先）<input type="text" name="team" value="'+esc(v.team||'土庫分隊')+'" required></label><label>對應官方表格位置<input type="text" name="sheetRef" value="'+esc(v.sheetRef||'')+'"></label>';}
+  else{h+='<label>匝道方向（未核實請留白）<input type="text" name="ramp" value="'+esc(v.rampDirection||'')+'"></label><label>可通往的國道方向（未核實請留白）<input type="text" name="toward" value="'+esc(v.toward||'')+'"></label>';}
+  h+='<label>資料來源<input type="text" name="source" value="'+esc(v.source||'')+'"></label>';
+  h+='<label>核實狀態（已核實＝可產生確定判斷）<select name="status"><option value="pending"'+(v.status!=='verified'?' selected':'')+'>⚠ 待核實</option><option value="verified"'+(v.status==='verified'?' selected':'')+'>✔ 已核實（須填核實人）</option></select></label>';
+  h+='<label>核實人／依據（已核實時必填）<input type="text" name="by" value="'+esc(v.verifiedBy||'')+'"></label>';
+  h+='<label>備註<input type="text" name="note" value="'+esc(v.note||'')+'"></label>';
+  h+=chk('en','啟用此規則',it?v.enabled:true);
+  h+='<div class="row" style="margin-top:14px"><button class="btn navy" type="submit">儲存</button><button class="btn" type="button" id="fcancel">取消</button></div></form>';
+  dlg.innerHTML=h;dlg.showModal();
+  $('fcancel').addEventListener('click',function(){dlg.close();});
+  $('frm').addEventListener('submit',function(e){
+    e.preventDefault();var f=new FormData(e.target),errs=[];
+    function g(n){return (f.get(n)||'').toString().trim();}
+    var sK=g('start'),eK=g('end'),s=null,en=null;
+    if(sK||eK||kind==='rule'){var ps=parseKm(sK),pe=parseKm(eK);if(!ps.ok)errs.push('起始公里數：'+ps.error);else s=ps.m/1000;if(!pe.ok)errs.push('結束公里數：'+pe.error);else en=pe.m/1000;}
+    var o;
+    if(kind==='rule')o={ruleId:g('id'),direction:g('direction'),startKm:s,endKm:en,includeStart:!!f.get('incS'),includeEnd:!!f.get('incE'),team:g('team'),sheetRef:g('sheetRef'),source:g('source'),status:g('status'),verifiedBy:g('by'),verifiedAt:'',startConfirmed:!!f.get('sc'),endConfirmed:!!f.get('ec'),enabled:!!f.get('en'),note:g('note')};
+    else o={icId:g('id'),name:g('name'),direction:g('direction'),rampDirection:g('ramp'),toward:g('toward'),startKm:s,endKm:en,includeStart:!!f.get('incS'),includeEnd:!!f.get('incE'),startConfirmed:!!f.get('sc'),endConfirmed:!!f.get('ec'),source:g('source'),status:g('status'),verifiedBy:g('by'),verifiedAt:'',enabled:!!f.get('en'),note:g('note')};
+    if(o.status==='verified')o.verifiedAt=(it&&it.status==='verified'&&it.verifiedAt)?it.verifiedAt:todayStr();else o.verifiedBy='';
+    var cand=clone(ds),list=kind==='rule'?cand.rules:cand.interchanges;
+    if(!it&&list.some(function(x){return x[key]===o[key];}))errs.push('編號已存在：'+o[key]);
+    if(!errs.length){
+      if(it){var ix=list.findIndex(function(x){return x[key]===o[key];});list[ix]=o;}else list.push(o);
+      var v2=validateDataset(cand);if(!v2.ok)errs=errs.concat(v2.errors);
+    }
+    if(errs.length){var fe=$('ferr');fe.innerHTML=errs.map(esc).join('<br>');fe.hidden=false;fe.scrollIntoView();return;}
+    var ov=list.filter(function(x){return x[key]!==o[key]&&x.enabled&&o.enabled&&x.direction===o.direction&&x.startKm!=null&&o.startKm!=null&&Math.max(toM(x.startKm),toM(o.startKm))<Math.min(toM(x.endKm),toM(o.endKm));}).map(function(x){return x[key];});
+    if(ov.length&&!confirm('此區間與以下規則重疊：'+ov.join('、')+'\n重疊處判別時會顯示「規則衝突」。仍要儲存？'))return;
+    ds=v2.ds;dlg.close();saveDS();toast('✔ 已儲存');
+  });
+}
+
+/* ---- 匯入／匯出 ---- */
+function exportText(){return JSON.stringify(ds,null,2);}
+$('expBtn').addEventListener('click',function(){
+  try{var b=new Blob([exportText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tk78-rules-'+todayStr()+'.json';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);toast('已匯出 JSON');}
+  catch(e){toast('下載失敗，請改用「複製 JSON」');}
+});
+$('expCopy').addEventListener('click',function(){copyText(exportText()).then(function(ok){toast(ok?'✔ 已複製 JSON，可貼到備忘錄備份':'複製失敗');});});
+$('impBtn').addEventListener('click',function(){$('impFile').value='';$('impFile').click();});
+$('impFile').addEventListener('change',function(){
+  var f=this.files&&this.files[0];if(!f)return;var box=$('impErr');box.hidden=true;
+  var rd=new FileReader();rd.onload=function(){
+    var v=validateDataset(String(rd.result));
+    if(!v.ok){box.innerHTML='⛔ 匯入失敗，未變更任何規則：<br>'+v.errors.slice(0,12).map(esc).join('<br>')+(v.errors.length>12?'<br>…另有 '+(v.errors.length-12)+' 項':'');box.hidden=false;return;}
+    var n=counts();
+    if(confirm('匯入檔：版本 '+v.ds.version+'，勤務規則 '+v.ds.rules.length+' 筆、交流道 '+v.ds.interchanges.length+' 筆。\n將取代目前規則（目前啟用 '+(n.v+n.p)+' 筆）。建議先匯出備份。確定匯入？')){ds=v.ds;saveDS();toast('✔ 匯入完成');}
+  };rd.onerror=function(){box.textContent='⛔ 讀取檔案失敗。';box.hidden=false;};rd.readAsText(f,'utf-8');
+});
+
+/* ---- 列印 ---- */
+function tbl(kind,list){
+  if(!list.length)return '<p>（無）</p>';
+  return '<table><tr><th>編號</th><th>方向</th>'+(kind==='ic'?'<th>交流道／匝道</th>':'<th>優先分隊</th>')+'<th>公里數範圍</th><th>核實狀態</th></tr>'+list.map(function(x){
+    return '<tr><td>'+esc(x.ruleId||x.icId)+(x.enabled?'':'（停用）')+'</td><td>'+esc(x.direction)+'</td><td>'+(kind==='ic'?esc(x.name)+' ／ '+(x.rampDirection?esc(x.rampDirection):'匝道未核實'):esc(x.team))+'</td><td>'+esc(rangeText(x))+'</td><td>'+(x.status==='verified'?'已核實（'+esc(x.verifiedBy)+' '+esc(x.verifiedAt)+'）':'<b>未核實</b>')+'</td></tr>';}).join('')+'</table>';
+}
+function printSheet(){
+  var h='<h1>土庫消防隊　台78線救災快速判別 勤務參考資料</h1><div>列印時間：'+esc(nowStr())+'｜規則版本 '+esc(ds.version)+'｜最後更新 '+esc(ds.lastUpdated)+'</div>';
+  h+='<div class="warnbox">勤務輔助工具，仍須依正式勤務規定執行。標示「未核實」之資料不得作為勤務依據。</div>';
+  if(last){h+='<h3>本次判別</h3><pre style="white-space:pre-wrap;font:inherit">'+esc(summaryText(last,nowStr()))+'</pre>';}
+  h+='<h3>出動優先規則（土庫分隊）</h3>'+tbl('rule',ds.rules)+'<h3>交流道進入規則</h3>'+tbl('ic',ds.interchanges)+'<div style="margin-top:8px">資料來源：'+esc(ds.sourceDoc||'')+'</div>';
+  $('printArea').innerHTML=h;
+  if(pipWin){closePip();setTimeout(function(){window.print();},300);}else window.print();
+}
+
+/* ---- 浮動視窗（Document Picture-in-Picture：永遠在最上層的小視窗；僅電腦版 Chrome／Edge 116 以上） ---- */
+function closePip(){
+  if(!pipWin)return;var w=pipWin;pipWin=null;
+  var n=document.getElementById('pipNote');if(n)n.remove();
+  var first=document.querySelector('body > script');
+  Array.prototype.slice.call(w.document.body.children).forEach(function(k){if(k.tagName!=='SCRIPT')document.body.insertBefore(k,first);});
+  try{w.close();}catch(e){}
+}
+function openPip(){
+  if(pipWin){try{pipWin.focus();}catch(e){}return;}
+  if(!('documentPictureInPicture' in window)){toast('此瀏覽器不支援浮動視窗，請用電腦版 Chrome 或 Edge');return;}
+  window.documentPictureInPicture.requestWindow({width:430,height:720}).then(function(w){
+    pipWin=w;var d=w.document;
+    d.documentElement.lang='zh-Hant';d.title='台78判別';
+    var m=d.createElement('meta');m.setAttribute('charset','utf-8');d.head.appendChild(m);
+    document.querySelectorAll('style').forEach(function(s){d.head.appendChild(s.cloneNode(true));});
+    var kids=Array.prototype.filter.call(document.body.children,function(n){return n.tagName!=='SCRIPT';});
+    kids.forEach(function(n){d.body.appendChild(n);});
+    var note=document.createElement('div');note.id='pipNote';note.className='card';
+    note.style.margin='16px';note.innerHTML='<b>介面已移到浮動視窗。</b><br>關閉浮動視窗即可回到此頁。<br><br><button type="button" class="btn" id="pipBack">關閉浮動視窗</button>';
+    document.body.insertBefore(note,document.body.firstChild);
+    document.getElementById('pipBack').addEventListener('click',closePip);
+    w.addEventListener('pagehide',closePip);
+  }).catch(function(e){toast('無法開啟浮動視窗：'+(e&&e.message?e.message:e));});
+}
+if($('kmMode'))$('kmMode').addEventListener('click',function(){var k=$('km'),dec=k.getAttribute('inputmode')==='decimal';k.setAttribute('inputmode',dec?'text':'decimal');this.textContent=dec?'123':'ABC';k.blur();k.focus();});
+if($('pipBtn')){if('documentPictureInPicture' in window)$('pipBtn').addEventListener('click',openPip);else $('pipBtn').hidden=true;}
+$('printBtn2').addEventListener('click',printSheet);
+
+/* ---- 測試頁 ---- */
+$('runTests').addEventListener('click',function(){
+  var R=runSelfTests(),np=R.filter(function(x){return x.pass;}).length;
+  $('testOut').innerHTML='<div class="'+(np===R.length?'pass':'fail')+'" style="font-size:20px">'+(np===R.length?'✔ 全部通過：':'✘ 有失敗：')+np+' / '+R.length+'</div>'+R.map(function(x){return '<div style="font-size:14px;border-bottom:1px solid #ddd;padding:2px 0"><span class="'+(x.pass?'pass':'fail')+'">'+(x.pass?'✔ 通過':'✘ 失敗')+'</span> '+esc(x.name)+(x.pass?'':'　'+esc(x.detail))+'</div>';}).join('');
+});
+$('toggleTest').addEventListener('click',function(){
+  testMode=!testMode;this.textContent=testMode?'關閉測試模式':'開啟測試模式';
+  $('result').innerHTML='';last=null;renderBanner();toast(testMode?'測試模式已開啟（假資料）':'已回到正式規則');
+});
+function renderFix(){var F=buildFixture();$('fixList').innerHTML=F.rules.concat(F.interchanges).map(function(x){return itemHTML(x.ruleId?'rule':'ic',x).replace(/<div class="btns">.*?<\/div><\/div>$/,'</div>');}).join('');}
+
+/* ---- 說明頁 ---- */
+function renderHelp(){
+  var un=ds.rules.concat(ds.interchanges).filter(function(x){return x.status!=='verified';});
+  $('helpPend').innerHTML=
+  '<h3>資料依據</h3><p style="font-size:15px">依「雲林縣消防局台78線救災救護出動順序表 114.07.23」：黃色標示＝土庫分隊優先出動；表上紅筆數字、文字與箭頭視為土庫消防隊的勤務判斷資訊，已直接納入規則。紅筆「土」「虎」整理為「土庫交流道」「虎尾交流道」，紅筆公里數與表上黑底公里數相符；進入後的行車方向採與事故方向相同（西行事故進西行車道、東行事故進東行車道）。東行、西行規則完全分開。</p>'+
+  '<h3>尚未核實的資料（'+un.length+' 筆）</h3>'+(un.length?'<ul style="font-size:15px">'+un.map(function(x){return '<li>'+esc(x.ruleId||x.icId)+'：'+(x.name?esc(x.name)+' ':'')+esc(x.direction)+' '+esc(rangeText(x))+'</li>';}).join('')+'</ul>':'<p style="font-size:15px">目前沒有待核實項目。</p>')+
+  '<h3>會顯示「待人工確認」的情形</h3><ul style="font-size:15px">'+
+  '<li>土庫優先範圍的外緣點：西行 K14.9、K25.0；東行 K22.9、K31.0。表上只標示分界公里數，未標示該點歸哪一方。</li>'+
+  '<li>兩段土庫範圍的共用分界：西行 K22.1、東行 K25.8。出動優先確定為土庫，但由土庫或虎尾交流道進入，表上無法判斷。</li>'+
+  '<li>表上沒有規則的公里數，或照片無法辨識的區段（見下）。</li>'+
+  '<li>規則衝突（同方向同公里數有結果不一致的規則）。</li></ul>'+
+  '<h3>照片內容無法辨識／未建立的項目</h3><ul style="font-size:15px">'+
+  '<li>西行最左側第 1 格「東勢／台西」（K0.6 以下）：起點公里數照片中無法辨識，未建立規則。</li>'+
+  '<li>東行最右側第 9 格「公園／古坑」（K39.7 以後）：終點公里數照片中無法辨識，未建立規則。</li>'+
+  '<li>紅筆箭頭「← 14.9」（西行）與「31 →」（東行）：可辨識為箭頭，但表上沒有說明用意，未納入任何判斷。</li>'+
+  '<li>匝道的實體名稱與位置：照片未標示，僅整理行車方向。</li>'+
+  '<li>各方框內兩個分隊名稱的出動先後：表上未說明，非土庫區段僅列出標示的分隊，順序請依原表。</li></ul>';
+  $('helpBody').innerHTML=
+  '<details open><summary>1. 如何把官方表格資料輸入系統（新版表格更新）</summary><ol><li>拿出新版「出動順序表」。每個方框下方箭頭所指、相鄰的黑底公里數，就是該格的起訖範圍（上排西行、下排東行，分開輸入）。</li><li>到「規則」頁，修改既有規則的起訖公里數，或按「＋新增勤務規則」：選方向、填起訖公里數、分隊名稱、表上位置。土庫黃色標示的格子，分隊欄必須填「土庫分隊」才會視為土庫優先。</li><li>紅筆交流道標註對應到「＋新增交流道」：填交流道名稱、事故方向、適用公里數、進入後行車方向。</li><li>分界點歸屬表上已說明的，勾選「起始點／結束點歸屬已確認」並設定含／不含；沒有說明就不要勾，系統遇到該點會顯示待人工確認。</li></ol></details>'+
+  '<details><summary>2. 如何核實並建立東行、西行規則</summary><ol><li>新增或修改規則時，狀態選「已核實」並填入核實人／依據（例如「土庫消防隊 隊長」），系統自動記錄日期；尚未確定的資料選「待核實」，待核實資料不會產生確定判斷。</li><li>東行與西行各自建立，公里數互不通用（例如同樣 K24.6，東行與西行結果不同）。</li><li>修改後請更新「規則版本」，並匯出 JSON 備份。</li></ol></details>'+
+  '<details><summary>3. 如何測試出動優先判斷與交流道推薦</summary><ol><li>「測試」頁按「執行全部自動測試」，應顯示全部通過。</li><li>手動測試：按「開啟測試模式」（頂端出現黑黃警示，使用假資料），再回「判別」頁輸入。測完務必關閉測試模式。</li><li>正式規則可用這幾筆對照：西行 K20（土庫交流道）、西行 K24.6（虎尾交流道）、東行 K24.6（土庫交流道）、東行 K27（虎尾交流道）、西行 K22.1（土庫優先，交流道待人工確認）。</li></ol></details>'+
+  '<details><summary>4. 如何免費部署成手機可開啟的網頁</summary><ol><li>註冊免費 GitHub 帳號，建立新儲存庫（例如 tk78）。</li><li>把本檔案以檔名 <b>index.html</b> 上傳到儲存庫根目錄。</li><li>Settings → Pages → Source 選「Deploy from a branch」、分支 main、資料夾 /(root)，儲存。</li><li>約一～數分鐘後取得 https://帳號.github.io/tk78/ ，手機開啟即可。</li><li>注意：公開儲存庫的內容任何人都看得到，請先確認隊上同意公開。也可改用 Cloudflare Pages 等免費服務。</li></ol></details>'+
+  '<details><summary>5. 手機使用：加入主畫面（iPhone／Android）</summary><ol><li><b>iPhone：</b>用 Safari 開啟網址 → 下方「分享」→「加入主畫面」→「新增」。</li><li><b>Android：</b>用 Chrome 開啟網址 → 右上角「⋮」→「安裝應用程式」或「加到主畫面」。</li><li>輸入公里數時預設跳出數字鍵盤；要輸入 K 或 + 時，按輸入框右邊的「ABC」切換成全鍵盤。</li><li>使用「手機版套件」部署（含離線快取）時，在有網路的地方開啟並加入主畫面後，之後斷網也能開啟判別。單一 index.html 版本的離線能力依賴瀏覽器快取，不保證。</li><li>手機無法做出桌面版那種浮在其他 App 上方的視窗。</li></ol></details>'+
+  '<details><summary>6. 如何更新規則與備份資料</summary><ol><li>在「規則」頁修改的內容只存在這支手機的瀏覽器，不會同步到其他裝置。</li><li>每次修改後按「匯出 JSON」或「複製 JSON」（貼到備忘錄／LINE 保存）。</li><li>其他手機更新：「匯入 JSON」。格式錯誤會顯示原因，且不會更動現有規則。</li><li>清除瀏覽器資料可能清掉本機規則，請保留備份。</li><li>程式內建規則改版時，本機已存的規則不會被覆蓋；要改用內建版請按「重置為內建規則」。</li></ol></details>'+
+  '<details><summary>7. 系統限制</summary><ul><li>不具即時交通、封路或 GPS 定位功能。</li><li>查詢紀錄只存方向、公里數與結果，不存報案人個資。</li><li>勤務輔助工具，仍須依正式勤務規定執行。</li></ul></details>'+
+  '<details><summary>8. 電腦桌面浮動視窗</summary><ul><li><b>免安裝：</b>用電腦版 Chrome 或 Edge（116 版以上）開啟本頁，按頁首「🪟 浮動視窗」，介面會移到一個永遠在最上層的小視窗，可拖曳、縮放；關閉小視窗即回到原頁。此功能需要 https 網址（例如部署到 GitHub Pages 後）；手機與 Firefox／Safari 不支援，按鈕會自動隱藏。</li><li><b>桌面程式：</b>另附 Electron 專案（桌面程式資料夾內有 README），可執行或打包成 Windows 執行檔，視窗永遠置頂，並可從選單調整透明度。</li></ul></details>';
+}
+
+/* ---- 初始化 ---- */
+function renderAll(){renderBanner();renderRules();renderHelp();renderHist();renderFix();}
+renderAll();
+})();
+</script>
+<script>if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+</body>
+</html>

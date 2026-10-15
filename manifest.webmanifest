@@ -1,0 +1,17 @@
+{
+  "name": "土庫消防隊｜台78線救災快速判別系統",
+  "short_name": "台78判別",
+  "description": "輸入事故方向與公里數，判別土庫分隊是否優先出動及建議進入的交流道（勤務輔助工具）",
+  "lang": "zh-Hant",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b2a55",
+  "theme_color": "#0b2a55",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
